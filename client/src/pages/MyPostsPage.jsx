@@ -6,25 +6,26 @@ import useBlogStore from '../store/blogStore';
 const MyPostsPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
-  const { posts, postsLoading, postsError, fetchPosts, deletePost } = useBlogStore();
+  const { posts, postsLoading, postsError, fetchMyPosts, deletePost } = useBlogStore();
 
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
       return;
     }
-    // Fetch posts by current user
-    fetchPosts();
-  }, [isAuthenticated, navigate, fetchPosts]);
+    fetchMyPosts();  // ← Fetches only YOUR posts
+  }, [isAuthenticated, navigate, fetchMyPosts]);
 
   const handleEdit = (post) => {
-    navigate(`/edit-post/${post.id}`);
+    navigate(`/edit-post/${post._id}`);  // ← Use _id, not id
   };
 
   const handleDelete = async (postId) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await deletePost(postId);
+        // Optional: refetch
+        fetchMyPosts();
       } catch (error) {
         console.error('Failed to delete post:', error);
       }
@@ -55,9 +56,6 @@ const MyPostsPage = () => {
     );
   }
 
-  // Filter posts by current user
-  const userPosts = posts.filter(post => post.author?.id === user.id);
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,7 +69,7 @@ const MyPostsPage = () => {
           </Link>
         </div>
 
-        {postsLoading && userPosts.length === 0 ? (
+        {postsLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -79,13 +77,13 @@ const MyPostsPage = () => {
           <div className="text-center py-12">
             <p className="text-red-600 text-lg mb-4">Error: {postsError}</p>
             <button
-              onClick={() => fetchPosts()}
+              onClick={fetchMyPosts}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Try Again
             </button>
           </div>
-        ) : userPosts.length === 0 ? (
+        ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg mb-4">You haven't created any posts yet.</p>
             <Link
@@ -122,12 +120,12 @@ const MyPostsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {userPosts.map((post) => (
-                    <tr key={post.id} className="hover:bg-gray-50">
+                  {posts.map((post) => (
+                    <tr key={post._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           <Link
-                            to={`/post/${post.id}`}
+                            to={`/post/${post._id}`}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             {post.title}
@@ -144,11 +142,11 @@ const MyPostsPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          post.isPublished
+                          post.published
                             ? 'bg-green-100 text-green-800'
                             : 'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {post.isPublished ? 'Published' : 'Draft'}
+                          {post.published ? 'Published' : 'Draft'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -165,7 +163,7 @@ const MyPostsPage = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(post.id)}
+                          onClick={() => handleDelete(post._id)}
                           className="text-red-600 hover:text-red-900"
                         >
                           Delete

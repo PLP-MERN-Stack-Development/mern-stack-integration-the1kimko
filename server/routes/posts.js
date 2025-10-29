@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getPosts,
   getPost,
+  getMyPosts,
   getPostBySlug,
   createPost,
   updatePost,
@@ -14,6 +15,9 @@ const router = express.Router();
 router.route('/')
   .get(getPosts)
   .post(protect, createPost);
+
+router.route('/my')
+  .get(protect, getMyPosts)
 
 router.route('/:id')
   .get(getPost)

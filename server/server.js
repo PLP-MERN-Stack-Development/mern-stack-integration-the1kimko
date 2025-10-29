@@ -72,6 +72,14 @@ if (process.env.NODE_ENV === 'development') {
 // API routes
 app.use('/api/posts', postRoutes);
 app.use('/api/categories', categoryRoutes);
+
+app.use((req, res, next) => {
+  console.log(`REQUEST: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+console.log('Auth routes loaded:', authRoutes);
+
 app.use('/api/auth', authRoutes);
 
 // Root route

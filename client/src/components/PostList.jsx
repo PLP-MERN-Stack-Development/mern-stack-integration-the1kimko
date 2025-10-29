@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import PostCard from './PostCard';
 import { PostSchema } from '../types';
 import useBlogStore from '../store/blogStore';
@@ -12,13 +12,16 @@ const PostList = ({ onPostClick }) => {
     fetchPosts
   } = useBlogStore();
 
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  // useEffect(() => {
+  //   fetchPosts();
+  // }, [fetchPosts]);
 
   const handleLoadMore = () => {
     if (pagination.page < pagination.pages) {
-      fetchPosts({ page: pagination.page + 1 });
+      fetchPosts({
+        page: pagination.page + 1,
+        published: true
+      });
     }
   };
 
@@ -35,7 +38,7 @@ const PostList = ({ onPostClick }) => {
       <div className="text-center py-12">
         <p className="text-red-600 text-lg">Error: {postsError}</p>
         <button
-          onClick={() => fetchPosts()}
+          onClick={() => fetchPosts({ published: true })}
           className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Try Again
@@ -57,7 +60,7 @@ const PostList = ({ onPostClick }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {posts.map((post) => (
           <PostCard
-            key={post.id}
+            key={post._id}
             post={post}
             onReadMore={onPostClick}
           />

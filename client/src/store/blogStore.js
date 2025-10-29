@@ -31,7 +31,10 @@ const useBlogStore = create((set, get) => ({
   fetchPosts: async (params = {}) => {
     set({ postsLoading: true, postsError: null });
     try {
-      const response = await postsApi.getPosts({ ...get().filters, ...params });
+      const response = await postsApi.getPosts({
+        published: true,
+        ...get().filters,
+        ...params });
       set({
         posts: response.data,
         pagination: response.pagination,
@@ -54,6 +57,25 @@ const useBlogStore = create((set, get) => ({
       const response = await postsApi.getPost(id);
       set({
         currentPost: response.data,
+        postsLoading: false,
+        postsError: null,
+      });
+      return response;
+    } catch (error) {
+      set({
+        postsLoading: false,
+        postsError: error.message,
+      });
+      throw error;
+    }
+  },
+
+  fetchMyPosts: async () => {
+    set({ postsLoading: true, postsError: null });
+    try {
+      const response = await postsApi.getMyPosts();  // ← NEW
+      set({
+        posts: response.data,
         postsLoading: false,
         postsError: null,
       });

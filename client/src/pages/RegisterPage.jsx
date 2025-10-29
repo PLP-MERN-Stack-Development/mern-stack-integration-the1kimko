@@ -22,24 +22,29 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+  // Client-side validation
+  if (formData.password !== formData.confirmPassword) {
+    alert('Passwords do not match');
+    return;
+  }
+  if (formData.password.length < 6) {
+    alert('Password must be at least 6 characters');
+    return;
+  }
 
-    try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-      navigate('/');
-    } catch (error) {
-      // Error is handled by the store
-    }
-  };
+  try {
+    await register({
+      name: formData.name.trim(),
+      email: formData.email.toLowerCase().trim(),
+      password: formData.password,
+    });
+    navigate('/');
+  } catch (error) {
+    console.error('Registration failed:', error);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

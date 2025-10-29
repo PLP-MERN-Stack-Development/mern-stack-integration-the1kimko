@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PostList from '../components/PostList';
-import { PostSchema } from '../types';
 import useBlogStore from '../store/blogStore';
 
 const HomePage = () => {
@@ -19,52 +18,50 @@ const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    console.log('HomePage: Fetching posts...');  // ← DEBUG
     fetchCategories();
-  }, [fetchCategories]);
 
-  useEffect(() => {
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-
-    const newFilters = {
-      category: category || '',
-      search: search || '',
+    const params = {
       published: true,
+      category: searchParams.get('category') || '',
+      search: searchParams.get('search') || '',
     };
 
-    setFilters(newFilters);
-    setSearchTerm(search || '');
-
-    fetchPosts(newFilters);
-  }, [searchParams, fetchPosts, setFilters]);
+    fetchPosts(params);
+  }, [searchParams, fetchPosts, fetchCategories]);  
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const newFilters = { ...filters, search: searchTerm };
-    setFilters(newFilters);
-    fetchPosts(newFilters);
+    const params = { ...filters, search: searchTerm, published: true };
+    setFilters(params);
+    fetchPosts(params);
 
-    // Update URL
-    const params = new URLSearchParams();
-    if (newFilters.category) params.set('category', newFilters.category);
-    if (newFilters.search) params.set('search', newFilters.search);
-    navigate(`/?${params.toString()}`);
+    const urlParams = new URLSearchParams();
+    if (params.category) urlParams.set('category', params.category);
+    if (params.search) urlParams.set('search', params.search);
+    navigate(`/?${urlParams.toString()}`);
   };
 
   const handleCategoryFilter = (categorySlug) => {
-    const newFilters = { ...filters, category: categorySlug };
-    setFilters(newFilters);
-    fetchPosts(newFilters);
+    const params = { ...filters, category: categorySlug, published: true };
+    setFilters(params);
+    fetchPosts(params);
 
-    // Update URL
-    const params = new URLSearchParams();
-    if (newFilters.category) params.set('category', newFilters.category);
-    if (newFilters.search) params.set('search', newFilters.search);
-    navigate(`/?${params.toString()}`);
+    const urlParams = new URLSearchParams();
+    if (params.category) urlParams.set('category', params.category);
+    if (params.search) urlParams.set('search', params.search);
+    navigate(`/?${urlParams.toString()}`);
+  };
+
+  const handleClear = () => {
+    clearFilters();
+    setSearchTerm('');
+    navigate('/');
+    fetchPosts({ published: true });
   };
 
   const handlePostClick = (post) => {
-    navigate(`/post/${post.id}`);
+    navigate(`/post/${post._id}`);
   };
 
   return (
@@ -77,7 +74,6 @@ const HomePage = () => {
             A full-stack blog application built with MongoDB, Express.js, React, and Node.js
           </p>
 
-          {/* Search Bar */}
           <form onSubmit={handleSearch} className="max-w-md mx-auto">
             <input
               type="text"
@@ -95,12 +91,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-4 overflow-x-auto">
             <button
-              onClick={() => {
-                clearFilters();
-                setSearchTerm('');
-                navigate('/');
-                fetchPosts();
-              }}
+              onClick={handleClear}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                 !filters.category
                   ? 'bg-blue-600 text-white'
@@ -111,7 +102,7 @@ const HomePage = () => {
             </button>
             {categories?.map((category) => (
               <button
-                key={category.id}
+                key={category._id}
                 onClick={() => handleCategoryFilter(category.slug)}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                   filters.category === category.slug

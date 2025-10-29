@@ -9,14 +9,20 @@ exports.getPosts = async (req, res) => {
     const { page = 1, limit = 10, category, search, published } = req.query;
 
     // Build query
-    const query = {};
+    const query = { published: true };  // ← CORRECT
 
+    // Convert category slug to ObjectId
     if (category) {
-      query.category = category;
+      const cat = await Category.findOne({ slug: category });
+      if (!cat) {
+        return res.status(404).json({ success: false, error: 'Category not found' });
+      }
+      query.category = cat._id;
     }
 
+    // FIX: Use 'published' not 'isPublished'
     if (published !== undefined) {
-      query.isPublished = published === 'true';
+      query.published = published === 'true';  // ← FIXED
     }
 
     if (search) {
@@ -72,7 +78,6 @@ exports.getPost = async (req, res) => {
       });
     }
 
-    // Increment view count
     await post.incrementViewCount();
 
     res.json({
@@ -84,6 +89,21 @@ exports.getPost = async (req, res) => {
       success: false,
       error: error.message,
     });
+  }
+};
+
+// @desc Get my posts
+// @route GET /api/my
+// @access Private
+exports.getMyPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ author: req.user.id })
+      .populate('category', 'name slug color')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: posts });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -104,7 +124,6 @@ exports.getPostBySlug = async (req, res) => {
       });
     }
 
-    // Increment view count
     await post.incrementViewCount();
 
     res.json({
@@ -124,7 +143,7 @@ exports.getPostBySlug = async (req, res) => {
 // @access  Private
 exports.createPost = async (req, res) => {
   try {
-    const { title, content, excerpt, category, tags, isPublished } = req.body;
+    const { title, content, excerpt, category, tags, published } = req.body;
 
     const post = await Post.create({
       title,
@@ -132,7 +151,7 @@ exports.createPost = async (req, res) => {
       excerpt,
       category,
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      isPublished: isPublished || false,
+      published: published || false,  // ← FIXED
       author: req.user.id,
     });
 
@@ -166,7 +185,6 @@ exports.updatePost = async (req, res) => {
       });
     }
 
-    // Check if user is the author or admin
     if (post.author.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -174,7 +192,7 @@ exports.updatePost = async (req, res) => {
       });
     }
 
-    const { title, content, excerpt, category, tags, isPublished } = req.body;
+    const { title, content, excerpt, category, tags, published } = req.body;
 
     post = await Post.findByIdAndUpdate(
       req.params.id,
@@ -184,7 +202,7 @@ exports.updatePost = async (req, res) => {
         excerpt,
         category,
         tags: tags ? tags.split(',').map(tag => tag.trim()) : post.tags,
-        isPublished: isPublished !== undefined ? isPublished : post.isPublished,
+        published: published !== undefined ? published : post.published,  // ← FIXED
       },
       { new: true, runValidators: true }
     )
@@ -217,7 +235,6 @@ exports.deletePost = async (req, res) => {
       });
     }
 
-    // Check if user is the author or admin
     if (post.author.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,

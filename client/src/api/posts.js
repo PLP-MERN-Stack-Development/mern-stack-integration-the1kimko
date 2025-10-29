@@ -12,6 +12,9 @@ export const postsApi = {
     return apiClient.get(`/posts/${id}`);
   },
 
+  // Get my posts(individual profile)
+  getMyPosts: () => apiClient.get('/posts/my'),
+
   // Get post by slug
   getPostBySlug: async (slug) => {
     return apiClient.get(`/posts/slug/${slug}`);

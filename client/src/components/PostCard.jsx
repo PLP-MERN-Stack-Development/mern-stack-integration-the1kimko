@@ -1,75 +1,58 @@
-import { PostSchema } from '../types';
-
 const PostCard = ({ post, onReadMore }) => {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
 
   return (
-    <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {/* Featured Image */}
-      <div className="h-48 bg-gray-200">
+    <article className="card overflow-hidden group cursor-pointer" onClick={() => onReadMore(post)}>
+      <div className="relative overflow-hidden">
         <img
-          src={post.featuredImage}
+          src={post.featuredImage || `https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=250&fit=crop`}
           alt={post.title}
-          className="w-full h-full object-cover"
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      {/* Post Content */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-3">
           <span
-            className="text-sm font-medium text-white px-2 py-1 rounded"
-            style={{ backgroundColor: post.category?.color || '#3B82F6' }}
+            className="text-xs font-semibold text-white px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: post.category?.color || '#2563eb' }}
           >
             {post.category?.name}
           </span>
-          <span className="text-sm text-gray-500">
-            {post.viewCount} views
-          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{post.viewCount} views</span>
         </div>
 
-        <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {post.title}
         </h3>
 
-        <p className="text-gray-600 mb-4 line-clamp-3">
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
           {post.excerpt}
         </p>
 
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-gray-300 rounded-full mr-2"></div>
-            <span className="text-sm text-gray-700">{post.author?.name}</span>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-2">
+            <img
+              src={post.author?.avatar || `https://ui-avatars.com/api/?name=${post.author?.name}&background=2563eb&color=fff`}
+              alt={post.author?.name}
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="font-medium text-gray-700 dark:text-gray-300">{post.author?.name}</span>
           </div>
-          <span className="text-sm text-gray-500">
-            {formatDate(post.createdAt)}
-          </span>
+          <span className="text-gray-500 dark:text-gray-400">{formatDate(post.createdAt)}</span>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {post.tags?.map((tag, index) => (
-            <span
-              key={index}
-              className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
-            >
+        <div className="flex flex-wrap gap-1 mt-3">
+          {post.tags?.slice(0, 3).map((tag) => (
+            <span key={tag} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
               #{tag}
             </span>
           ))}
         </div>
-
-        <button
-          onClick={() => onReadMore(post)}
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors duration-200"
-        >
-          Read More
-        </button>
       </div>
     </article>
   );
