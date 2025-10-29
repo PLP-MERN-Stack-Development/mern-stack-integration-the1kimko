@@ -34,15 +34,58 @@ function createApiClient() {
       ...options,
     };
 
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
+    const { params, ...fetchOptions } = config;
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+    let requestUrl = url;
+    if (params && typeof params === 'object') {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === '') {
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            if (item !== undefined && item !== null && item !== '') {
+              searchParams.append(key, item);
+            }
+          });
+        } else {
+          searchParams.append(key, value);
+        }
+      });
+
+      const queryString = searchParams.toString();
+      if (queryString) {
+        requestUrl = `${url}?${queryString}`;
+      }
+    }
+
+    try {
+      const response = await fetch(requestUrl, fetchOptions);
+      const contentType = response.headers.get('content-type') || '';
+      let parsedBody;
+
+      if (contentType.includes('application/json')) {
+        parsedBody = await response.json();
+      } else {
+        const text = await response.text();
+        parsedBody = text;
+        if (!response.ok) {
+          throw new Error(text || 'Something went wrong');
+        }
+        return parsedBody;
       }
 
-      return data;
+      if (!response.ok) {
+        const errorMessage =
+          parsedBody?.error ||
+          parsedBody?.message ||
+          'Something went wrong';
+        throw new Error(errorMessage);
+      }
+
+      return parsedBody;
     } catch (error) {
       console.error('API Error:', error);
       throw error;
@@ -50,7 +93,11 @@ function createApiClient() {
   };
 
   // HTTP methods
-  const get = (endpoint) => request(endpoint, { method: 'GET' });
+  const get = (endpoint, options = {}) =>
+    request(endpoint, {
+      ...options,
+      method: 'GET',
+    });
 
   const post = (endpoint, data) =>
     request(endpoint, {

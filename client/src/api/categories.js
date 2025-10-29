@@ -26,3 +26,5 @@ export const categoriesApi = {
     return apiClient.delete(`/categories/${id}`);
   },
 };
+
+export default categoriesApi;
