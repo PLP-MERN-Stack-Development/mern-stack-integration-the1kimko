@@ -1,3 +1,4 @@
+// server/controllers/postController.js
 const Post = require('../models/Post');
 const Category = require('../models/Category');
 
@@ -9,7 +10,13 @@ exports.getPosts = async (req, res) => {
     const { page = 1, limit = 10, category, search, published } = req.query;
 
     // Build query
-    const query = { published: true };  // ← CORRECT
+    const query = {};
+
+    if (published !== undefined) {
+      query.published = published === 'true';
+    } else {
+      query.published = true;  // Default to published posts
+    }
 
     // Convert category slug to ObjectId
     if (category) {
@@ -18,11 +25,6 @@ exports.getPosts = async (req, res) => {
         return res.status(404).json({ success: false, error: 'Category not found' });
       }
       query.category = cat._id;
-    }
-
-    // FIX: Use 'published' not 'isPublished'
-    if (published !== undefined) {
-      query.published = published === 'true';  // ← FIXED
     }
 
     if (search) {
@@ -38,7 +40,7 @@ exports.getPosts = async (req, res) => {
       .populate('author', 'name email avatar')
       .populate('category', 'name slug color')
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
+      .limit(parseInt(limit))
       .skip((page - 1) * limit);
 
     const total = await Post.countDocuments(query);
@@ -92,9 +94,9 @@ exports.getPost = async (req, res) => {
   }
 };
 
-// @desc Get my posts
-// @route GET /api/my
-// @access Private
+// @desc    Get my posts
+// @route   GET /api/posts/my
+// @access  Private
 exports.getMyPosts = async (req, res) => {
   try {
     const posts = await Post.find({ author: req.user.id })
@@ -145,13 +147,23 @@ exports.createPost = async (req, res) => {
   try {
     const { title, content, excerpt, category, tags, published } = req.body;
 
+    // Handle tags
+    let tagsArray = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        tagsArray = tags;
+      } else if (typeof tags === 'string') {
+        tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      }
+    }
+
     const post = await Post.create({
       title,
       content,
       excerpt,
       category,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      published: published || false,  // ← FIXED
+      tags: tagsArray,
+      published: published ?? false,
       author: req.user.id,
     });
 
@@ -194,6 +206,11 @@ exports.updatePost = async (req, res) => {
 
     const { title, content, excerpt, category, tags, published } = req.body;
 
+    let tagsArray = post.tags;
+    if (tags) {
+      tagsArray = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    }
+
     post = await Post.findByIdAndUpdate(
       req.params.id,
       {
@@ -201,8 +218,8 @@ exports.updatePost = async (req, res) => {
         content,
         excerpt,
         category,
-        tags: tags ? tags.split(',').map(tag => tag.trim()) : post.tags,
-        published: published !== undefined ? published : post.published,  // ← FIXED
+        tags: tagsArray,
+        published: published !== undefined ? published : post.published,
       },
       { new: true, runValidators: true }
     )

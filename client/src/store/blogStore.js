@@ -1,9 +1,9 @@
+// client/src/store/blogStore.js
 import { create } from 'zustand';
-import { postsApi } from '../api/posts';
-import { categoriesApi } from '../api/categories';
+import postsApi from '../api/posts';
+import categoriesApi from '../api/categories';
 
 const useBlogStore = create((set, get) => ({
-  // Posts state
   posts: [],
   currentPost: null,
   postsLoading: false,
@@ -14,32 +14,41 @@ const useBlogStore = create((set, get) => ({
     total: 0,
     pages: 0,
   },
-
-  // Categories state
   categories: [],
   categoriesLoading: false,
   categoriesError: null,
-
-  // Filters
   filters: {
     category: '',
     search: '',
     published: true,
   },
 
-  // Posts actions
   fetchPosts: async (params = {}) => {
     set({ postsLoading: true, postsError: null });
     try {
-      const response = await postsApi.getPosts({
-        published: true,
-        ...get().filters,
-        ...params });
+      const response = await postsApi.getPosts({ published: true, ...get().filters, ...params });
       set({
         posts: response.data,
         pagination: response.pagination,
         postsLoading: false,
-        postsError: null,
+      });
+      return response;
+    } catch (error) {
+      set({
+        postsLoading: false,
+        postsError: error.message,
+      });
+      throw error;
+    }
+  },
+
+  fetchMyPosts: async () => {
+    set({ postsLoading: true, postsError: null });
+    try {
+      const response = await postsApi.getMyPosts();
+      set({
+        posts: response.data,
+        postsLoading: false,
       });
       return response;
     } catch (error) {
@@ -58,26 +67,6 @@ const useBlogStore = create((set, get) => ({
       set({
         currentPost: response.data,
         postsLoading: false,
-        postsError: null,
-      });
-      return response;
-    } catch (error) {
-      set({
-        postsLoading: false,
-        postsError: error.message,
-      });
-      throw error;
-    }
-  },
-
-  fetchMyPosts: async () => {
-    set({ postsLoading: true, postsError: null });
-    try {
-      const response = await postsApi.getMyPosts();  // ← NEW
-      set({
-        posts: response.data,
-        postsLoading: false,
-        postsError: null,
       });
       return response;
     } catch (error) {
@@ -96,7 +85,6 @@ const useBlogStore = create((set, get) => ({
       set({
         currentPost: response.data,
         postsLoading: false,
-        postsError: null,
       });
       return response;
     } catch (error) {
@@ -166,7 +154,6 @@ const useBlogStore = create((set, get) => ({
     }
   },
 
-  // Categories actions
   fetchCategories: async () => {
     set({ categoriesLoading: true, categoriesError: null });
     try {
@@ -174,7 +161,6 @@ const useBlogStore = create((set, get) => ({
       set({
         categories: response.data,
         categoriesLoading: false,
-        categoriesError: null,
       });
       return response;
     } catch (error) {
@@ -186,7 +172,6 @@ const useBlogStore = create((set, get) => ({
     }
   },
 
-  // Filter actions
   setFilters: (newFilters) => {
     set(state => ({
       filters: { ...state.filters, ...newFilters },
@@ -203,7 +188,6 @@ const useBlogStore = create((set, get) => ({
     });
   },
 
-  // Clear errors
   clearPostsError: () => set({ postsError: null }),
   clearCategoriesError: () => set({ categoriesError: null }),
 }));

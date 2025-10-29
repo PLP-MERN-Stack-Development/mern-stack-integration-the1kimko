@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import './index.css'
-import App from './App.jsx'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';  // ← ADD
+import App from './App';
 import useAuthStore from './store/authStore';
+import './index.css';
 
-function ThemeProvider({ children }) {
+function Root() {
   const { user } = useAuthStore();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (user?.theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -16,15 +16,11 @@ function ThemeProvider({ children }) {
     }
   }, [user?.theme]);
 
-  return children;
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+createRoot(document.getElementById('root')).render(<Root />);

@@ -1,5 +1,4 @@
-// Post.js - Mongoose model for blog posts
-
+// server/models/Post.js
 const mongoose = require('mongoose');
 
 const PostSchema = new mongoose.Schema(
@@ -97,4 +96,4 @@ PostSchema.methods.incrementViewCount = function () {
   return this.save();
 };
 
-module.exports = mongoose.model('Post', PostSchema);
+module.exports = mongoose.model('Post', PostSchema); 

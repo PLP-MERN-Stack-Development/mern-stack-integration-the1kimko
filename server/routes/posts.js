@@ -1,33 +1,33 @@
+// server/routes/posts.js
 const express = require('express');
 const {
   getPosts,
   getPost,
-  getMyPosts,
   getPostBySlug,
+  getMyPosts,
   createPost,
   updatePost,
   deletePost,
   addComment,
 } = require('../controllers/postController');
 const { protect } = require('../middleware/auth');
+
 const router = express.Router();
 
-router.route('/')
-  .get(getPosts)
-  .post(protect, createPost);
+// PUBLIC ROUTES
+router.get('/', getPosts);
+router.get('/slug/:slug', getPostBySlug);
 
-router.route('/my')
-  .get(protect, getMyPosts)
+// PRIVATE: MY POSTS - BEFORE ID ROUTES
+router.get('/my', protect, getMyPosts);
 
-router.route('/:id')
-  .get(getPost)
-  .put(protect, updatePost)
-  .delete(protect, deletePost);
+// ID-BASED ROUTES
+router.get('/:id', getPost);
+router.put('/:id', protect, updatePost);
+router.delete('/:id', protect, deletePost);
 
-router.route('/slug/:slug')
-  .get(getPostBySlug);
-
-router.route('/:id/comments')
-  .post(protect, addComment);
+// OTHER PRIVATE ROUTES
+router.post('/', protect, createPost);
+router.post('/:id/comments', protect, addComment);
 
 module.exports = router;

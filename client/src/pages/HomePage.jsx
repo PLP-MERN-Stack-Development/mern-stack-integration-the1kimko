@@ -8,7 +8,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const {
     categories,
-    fetchCategories,
+    // fetchCategories,
     fetchPosts,
     filters,
     setFilters,
@@ -19,7 +19,7 @@ const HomePage = () => {
 
   useEffect(() => {
     console.log('HomePage: Fetching posts...');  // ← DEBUG
-    fetchCategories();
+    // fetchCategories();
 
     const params = {
       published: true,
@@ -28,7 +28,7 @@ const HomePage = () => {
     };
 
     fetchPosts(params);
-  }, [searchParams, fetchPosts, fetchCategories]);  
+  }, [searchParams, fetchPosts]);
 
   const handleSearch = (e) => {
     e.preventDefault();

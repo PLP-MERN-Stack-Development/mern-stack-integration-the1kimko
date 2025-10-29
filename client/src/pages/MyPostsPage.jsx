@@ -1,3 +1,4 @@
+// client/src/pages/MyPostsPage.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -13,19 +14,18 @@ const MyPostsPage = () => {
       navigate('/login');
       return;
     }
-    fetchMyPosts();  // ← Fetches only YOUR posts
+    fetchMyPosts();
   }, [isAuthenticated, navigate, fetchMyPosts]);
 
   const handleEdit = (post) => {
-    navigate(`/edit-post/${post._id}`);  // ← Use _id, not id
+    navigate(`/edit-post/${post._id}`);
   };
 
   const handleDelete = async (postId) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await deletePost(postId);
-        // Optional: refetch
-        fetchMyPosts();
+        fetchMyPosts();  // Refetch after delete
       } catch (error) {
         console.error('Failed to delete post:', error);
       }
@@ -42,9 +42,9 @@ const MyPostsPage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Please log in to view your posts.</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to view your posts.</p>
           <button
             onClick={() => navigate('/login')}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -57,10 +57,10 @@ const MyPostsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Posts</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Posts</h1>
           <Link
             to="/create-post"
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -85,7 +85,7 @@ const MyPostsPage = () => {
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg mb-4">You haven't created any posts yet.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">You haven't created any posts yet.</p>
             <Link
               to="/create-post"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -94,39 +94,39 @@ const MyPostsPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Views
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {posts.map((post) => (
-                    <tr key={post._id} className="hover:bg-gray-50">
+                    <tr key={post._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           <Link
                             to={`/post/${post._id}`}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                           >
                             {post.title}
                           </Link>
@@ -143,28 +143,28 @@ const MyPostsPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           post.published
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                         }`}>
                           {post.published ? 'Published' : 'Draft'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {post.viewCount}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(post.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleEdit(post)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(post._id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete
                         </button>

@@ -224,31 +224,43 @@ The frontend uses two Zustand stores:
 
 ## Deployment Guide
 
-1. **Prepare Environment**
-   - Provision a MongoDB instance (Atlas or self-hosted).
-   - Create a production-ready `.env` file under `server/` with strong `JWT_SECRET` and the hosted frontend origin.
+1. **Prepare the backend environment**
+   - Provision a MongoDB instance (Atlas or self-managed) and note the connection string.
+   - Generate a strong `JWT_SECRET` and populate `server/.env` alongside `PORT`, `MONGODB_URI`, `JWT_EXPIRES_IN`, and `ALLOWED_ORIGIN*` values that point at your hosted frontend.
+   - Decide whether Express will also serve the PWA bundles or if you will host the frontend separately.
 
-2. **Build the Frontend**
+2. **Build and host the frontend**
    ```bash
    cd client
    npm install
    npm run build
    ```
-   Deploy the contents of `client/dist` to a static host (Netlify, Vercel, S3 + CloudFront, etc.) or serve it behind the Express app if you prefer a single deployment target.
+   - Deploy the generated `client/dist` directory to a static host (Netlify, Vercel, S3/CloudFront, etc.).
+   - For a single deployable bundle, copy `client/dist` into the backend project and serve it via Express (see optional step below).
 
-3. **Deploy the Backend**
-   - Copy the `server/` directory to your server or hosting provider (Render, Railway, Heroku alternatives, etc.).
-   - Install dependencies: `npm install --production`.
-   - Set environment variables (PORT, MONGODB_URI, JWT_SECRET, ALLOWED_ORIGIN*, etc.).
-   - Start the server: `npm start` (consider using `pm2` or a systemd service for process management).
+3. **Deploy the backend**
+   - Copy the `server/` folder to your server or PaaS (Render, Railway, Fly.io, etc.).
+   - Install production dependencies: `npm install --production`.
+   - Configure environment variables through your host’s dashboard or `.env`.
+   - Start the server with `npm start` and manage the process with `pm2`, systemd, or your host’s supervisor.
 
 4. **Configure CORS**
-   - Ensure the deployed frontend origin matches one of `ALLOWED_ORIGIN` variables or update the allow list accordingly to avoid runtime CORS errors.
+   - Ensure the deployed frontend URL exactly matches one of the values in `allowedOrigins` derived from `ALLOWED_ORIGIN1` / `ALLOWED_ORIGIN2`. Any mismatch results in a browser CORS error.
 
-5. **Optional: Serve SPA from Express**
-   - Copy `client/dist` into a directory accessible by Express and add static file serving middleware and a catch-all route that returns `index.html`.
+5. **Optional: Serve the SPA from Express**
+   - Move the contents of `client/dist` to a directory such as `server/public`.
+   - Add to `server/server.js`:
+     ```js
+     app.use(express.static(path.join(__dirname, 'public')));
+     app.get('*', (_, res) => {
+       res.sendFile(path.join(__dirname, 'public', 'index.html'));
+     });
+     ```
 
----
+6. **Seed production data (optional)**
+   - Create an initial user manually or via `/api/auth/register`.
+   - Update `server/seed.js` with the user’s email and run `node seed.js` to populate example posts and categories.
+
 
 ## Troubleshooting
 
@@ -260,5 +272,4 @@ The frontend uses two Zustand stores:
 
 ---
 
-Happy hacking! Feel free to extend the platform with rich text editing, image uploads, analytics dashboards, or any features your coursework requires.
-
+Happy hacking! Feel free to extend the platform with rich text editing, image uploads, analytics dashboards.
