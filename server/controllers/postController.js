@@ -1,7 +1,6 @@
 // server/controllers/postController.js
 const Post = require('../models/Post');
 const Category = require('../models/Category');
-
 // @desc    Get all posts
 // @route   GET /api/posts
 // @access  Public
@@ -313,4 +312,26 @@ exports.addComment = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+// @desc    Upload featured image for a post
+// @route   POST /api/posts/upload
+// @access  Private
+exports.uploadPostImage = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      error: 'Image file is required',
+    });
+  }
+
+  const filePath = `/uploads/${req.file.filename}`;
+
+  res.status(201).json({
+    success: true,
+    data: {
+      url: filePath,
+      filename: req.file.filename,
+    },
+  });
 };

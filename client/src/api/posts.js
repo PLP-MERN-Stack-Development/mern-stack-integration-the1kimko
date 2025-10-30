@@ -26,6 +26,9 @@ export const postsApi = {
   addComment: async (postId, content) => {
     return apiClient.post(`/posts/${postId}/comments`, { content });
   },
+  uploadImage: async (formData) => {
+    return apiClient.upload('/posts/upload', formData);
+  },
 };
 
 export default postsApi;

@@ -154,6 +154,15 @@ const useBlogStore = create((set, get) => ({
     }
   },
 
+  uploadPostImage: async (formData) => {
+    try {
+      return await postsApi.uploadImage(formData);
+    } catch (error) {
+      set({ postsError: error.message });
+      throw error;
+    }
+  },
+
   fetchCategories: async () => {
     set({ categoriesLoading: true, categoriesError: null });
     try {

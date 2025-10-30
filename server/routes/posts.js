@@ -9,8 +9,10 @@ const {
   updatePost,
   deletePost,
   addComment,
+  uploadPostImage,
 } = require('../controllers/postController');
 const { protect } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -20,6 +22,9 @@ router.get('/slug/:slug', getPostBySlug);
 
 // PRIVATE: MY POSTS - BEFORE ID ROUTES
 router.get('/my', protect, getMyPosts);
+
+// PRIVATE: UPLOADS
+router.post('/upload', protect, upload.single('image'), uploadPostImage);
 
 // ID-BASED ROUTES
 router.get('/:id', getPost);
