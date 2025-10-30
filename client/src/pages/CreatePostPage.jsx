@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useBlogStore from '../store/blogStore';
 
 const CreatePostPage = () => {
   const navigate = useNavigate();
-  const { createPost } = useBlogStore();
+  const { categories, fetchCategories, createPost } = useBlogStore();
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,6 +16,19 @@ const CreatePostPage = () => {
     tags: '',
     published: false,
   });
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (!formData.category && categories?.length) {
+      setFormData(prev => ({
+        ...prev,
+        category: categories[0]._id,
+      }));
+    }
+  }, [categories, formData.category]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,10 +45,11 @@ const CreatePostPage = () => {
 
     try {
       // ENSURE tags IS STRING BEFORE SPLIT
-      const tagsString = formData.tags?.trim() || '';
+      const tagsString = formData.tags ?? '';
       const tagsArray = tagsString
-        ? tagsString.split(',').map(t => t.trim()).filter(t => t)
-        : [];
+        .split(/[,#\s]+/)
+        .map(tag => tag.trim())
+        .filter(Boolean);
 
       await createPost({
         title: formData.title,
@@ -98,11 +112,11 @@ const CreatePostPage = () => {
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
           >
             <option value="">Select category</option>
-            <option value="66f8a1b2c3d4e5f6a7b8c9d0">Technology</option>
-            <option value="66f8a1b2c3d4e5f6a7b8c9d1">Design</option>
-            <option value="66f8a1b2c3d4e5f6a7b8c9d2">Lifestyle</option>
-            <option value="66f8a1b2c3d4e5f6a7b8c9d3">Business</option>
-            <option value="66f8a1b2c3d4e5f6a7b8c9d4">Travel</option>
+            {categories?.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
           </select>
         </div>
 

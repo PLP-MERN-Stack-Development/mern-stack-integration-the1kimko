@@ -55,7 +55,7 @@ const Navbar = () => {
                 <div className="py-1">
                   {categories?.map((cat) => (
                     <Link
-                      key={cat.id}
+                      key={cat._id}
                       to={`/?category=${cat.slug}`}
                       className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
@@ -157,7 +157,7 @@ const Navbar = () => {
               <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800">Home</Link>
               {categories?.map((cat) => (
                 <Link
-                  key={cat.id}
+                  key={cat._id}
                   to={`/?category=${cat.slug}`}
                   className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
                 >

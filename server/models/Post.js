@@ -65,17 +65,35 @@ const PostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Create slug from title before saving
-PostSchema.pre('save', function (next) {
-  if (!this.isModified('title')) {
-    return next();
-  }
-
-  this.slug = this.title
+const generateSlug = (title = '') =>
+  title
+    .toString()
     .toLowerCase()
+    .trim()
     .replace(/[^\w ]+/g, '')
     .replace(/ +/g, '-');
 
+// Ensure slug exists before validation (create & save)
+PostSchema.pre('validate', function (next) {
+  if (!this.title) {
+    return next();
+  }
+
+  if (!this.isModified('title') && this.slug) {
+    return next();
+  }
+
+  this.slug = generateSlug(this.title);
+  next();
+});
+
+// Ensure slug stays in sync on findOneAndUpdate / findByIdAndUpdate
+PostSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+  if (update && update.title) {
+    update.slug = generateSlug(update.title);
+    this.setUpdate(update);
+  }
   next();
 });
 
