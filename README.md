@@ -20,9 +20,16 @@ This repository contains a full-stack blog platform built with the MERN (MongoDB
 
 ---
 
+## 📌 Deployed URL
+
+[View Live App](https://mern-blog-client-qv1u.onrender.com/)
+
 ---
-## Live Link
-- [MERN Blog](https://mern-blog-client-qv1u.onrender.com/)
+
+## 🖼 Screenshot
+
+![Task Manager Screenshot](./client/public/mern-blog.png)
+
 ---
 
 ## Tech Stack
